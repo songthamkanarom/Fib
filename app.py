@@ -16,28 +16,33 @@ def calculate_fibonacci():
     
     for symbol in symbols:
         try:
-            clean_symbol = symbol.split(":")[-1].strip().upper()
+            clean_symbol = str(symbol).split(":")[-1].strip().upper()
             ticker = yf.Ticker(clean_symbol)
-         
-         # ดึงข้อมูล 60 วัน และลบแถวที่เป็น NaN ออกก่อนตัด 30 แท่งล่าสุด
+            
+            # ดึงข้อมูล 60 วัน และตัดเอา 30 แท่งล่าสุด
             df = ticker.history(period="60d")
-            if not df.empty:
-                df = df.dropna(subset=['High', 'Low']).tail(30)
             
             if df.empty or len(df) < 5:
                 results[symbol] = {"fib618": "-"}
                 continue
-                
-            high_prices, low_prices = df['High'], df['Low']
-            max_high = high_prices.max()
-            min_low = low_prices.min()
             
-            # คำนวณ Fibonacci 61.8% Retracement
-            fib_618_val = min_low + ((max_high - min_low) * 0.618)
-            current_fib618 = round(float(fib_618_val), 2) if not pd.isna(fib_618_val) else "-"
+            # ดึง 30 แท่งราคาล่าสุด
+            df_30 = df.tail(30)
             
-            results[symbol] = {"fib618": current_fib618}
-        except Exception:
+            # 📌 แปลง Series เป็น NumPy values เพื่อป้องกันปัญหา Pandas Index/Data Type เพี้ยน
+            high_vals = df_30['High'].to_numpy()
+            low_vals = df_30['Low'].to_numpy()
+            
+            max_high = float(high_vals.max())
+            min_low = float(low_vals.min())
+            
+            # คำนวณ Fibonacci 61.8%
+            fib_val = min_low + ((max_high - min_low) * 0.618)
+            
+            results[symbol] = {"fib618": f"{fib_val:.2f}"}
+            
+        except Exception as e:
+            print(f"Error Fib calculation for {symbol}: {str(e)}")
             results[symbol] = {"fib618": "-"}
             
     return jsonify({"status": "success", "data": results})
