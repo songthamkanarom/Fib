@@ -18,8 +18,11 @@ def calculate_fibonacci():
         try:
             clean_symbol = symbol.split(":")[-1].strip().upper()
             ticker = yf.Ticker(clean_symbol)
-            # ดึงข้อมูลย้อนหลัง แล้วตัดเอา 30 แท่งล่าสุด
-            df = ticker.history(period="60d").tail(30)
+         
+         # ดึงข้อมูล 60 วัน และลบแถวที่เป็น NaN ออกก่อนตัด 30 แท่งล่าสุด
+            df = ticker.history(period="60d")
+            if not df.empty:
+                df = df.dropna(subset=['High', 'Low']).tail(30)
             
             if df.empty or len(df) < 5:
                 results[symbol] = {"fib618": "-"}
