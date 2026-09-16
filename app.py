@@ -1,6 +1,13 @@
 # ==========================================
 # Endpoint คำนวณ Fibonacci 61.8% (ย้อนหลัง 30 วัน)
 # ==========================================
+import yfinance as yf
+import pandas as pd
+from flask import Flask, request, jsonify
+
+# 📌 ประกาศตัวแปร app
+app = Flask(__name__)
+
 @app.route('/calculate-fibonacci', methods=['POST'])
 def calculate_fibonacci():
     data = request.json
